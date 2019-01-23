@@ -14,7 +14,8 @@
  */
 
 namespace BLKTech\Storage\Raw;
-use \BLKTech\Cryptography\Hash;
+use BLKTech\Cryptography\Hash;
+use BLKTech\Storage\Raw\Exception\CorruptedFileException;
 /**
  *
  * @author TheKito < blankitoracing@gmail.com >
@@ -29,24 +30,35 @@ abstract class Driver
     public abstract function spaceAvailable();  
     public abstract function getUID();
     
-    public function setHashed(Hash $hash, $data)
+    public function hashSet(Hash $hash, $data)
     {
         $hashValue = $hash->calc($data);
         $this->set($hashValue, $data);
         return $hashValue;
-    }
-    
-    public function getHashed(Hash $hash, $hashValue)
+    }    
+    public function hashGet(Hash $hash, $hashValue)
     {
-        if(!$hash->checkHash($hashValue))
-            throw new InvalidHashValueException($hashValue);
+        $hash->validateHash($hashValue);
         
         $data = $this->get($hashValue);
         
-        if(!$this->check($hashValue, $data))
+        if(!$hash->check($hashValue, $data))
         {
             $this->delete($hashValue);
             throw new CorruptedFileException($hashValue);
-        }        
+        }       
+        
+        return $data;
     }    
+    public function hashDelete(Hash $hash, $hashValue) 
+    {
+        $hash->validateHash($hashValue);
+        return $this->delete($hashValue);
+    }
+    public function hashExists(Hash $hash, $hashValue) 
+    {
+        $hash->validateHash($hashValue);
+        return $this->exists($hashValue);
+    }
+    
 }

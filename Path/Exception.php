@@ -14,18 +14,12 @@
  */
 
 namespace BLKTech\Storage\Path;
-use BLKTech\DataType\Path;
 
 /**
  *
  * @author TheKito < blankitoracing@gmail.com >
  */
  
-abstract class Driver 
-{
-    public abstract function exists($id);
-    public abstract function delete($id);
-    public abstract function get($id);
-    public abstract function set(Path $path);    
-    public abstract function getChilds($id);
+class Exception extends \BLKTech\Storage\Exception {
+
 }

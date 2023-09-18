@@ -14,57 +14,58 @@
  */
 
 namespace BLKTech\Storage\KeyValue\Driver\Memory;
-use \BLKTech\DataType\Service;
+
+use BLKTech\DataType\Service;
 
 /**
  *
  * @author TheKito < blankitoracing@gmail.com >
  */
- 
-class Memcached extends \BLKTech\Storage\KeyValue\Driver\Memory{
-    
+
+class Memcached extends \BLKTech\Storage\KeyValue\Driver\Memory
+{
     public static function getLocalHost()
     {
         return new Memcached(new Service('127.0.0.1', 11211));
     }
-    
+
     private $memcached;
-        
-    function __construct(Service $server)
+
+    public function __construct(Service $server)
     {
-        $this->memcached = new \Memcached();        
-        $this->memcached->addServer($server->getHost(),$server->getPort());                
+        $this->memcached = new \Memcached();
+        $this->memcached->addServer($server->getHost(), $server->getPort());
     }
 
-    
-    public function delete($key) 
+
+    public function delete($key)
     {
         return $this->memcached->delete($key);
     }
 
-    public function exists($key) 
+    public function exists($key)
     {
-        return $this->memcached->get($key)!==FALSE;
+        return $this->memcached->get($key)!==false;
     }
 
-    public function get($key) 
+    public function get($key)
     {
         return $this->memcached->get($key);
     }
 
-    public function set($key, $data) 
+    public function set($key, $data)
     {
         return $this->memcached->set($key, $data);
     }
 
-    public function getKeys() 
+    public function getKeys()
     {
-        throw new \BLKTech\NotImplementedException();       
+        throw new \BLKTech\NotImplementedException();
     }
 
-    public function getValues($key) 
+    public function getValues($key)
     {
-        throw new \BLKTech\NotImplementedException();        
+        throw new \BLKTech\NotImplementedException();
     }
 
 }

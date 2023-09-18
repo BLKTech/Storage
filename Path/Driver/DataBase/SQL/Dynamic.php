@@ -14,6 +14,7 @@
  */
 
 namespace BLKTech\Storage\Path\Driver\DataBase\SQL;
+
 use BLKTech\DataBase\SQL\Driver\MySQL;
 use BLKTech\DataType\Path;
 use BLKTech\DataType\Integer;
@@ -22,85 +23,83 @@ use BLKTech\DataType\Integer;
  *
  * @author TheKito < blankitoracing@gmail.com >
  */
- 
+
 class Dynamic extends \BLKTech\Storage\Path\Driver\DataBase\SQL
 {
-    
-    private $driver;    
+    private $driver;
     private $string;
     public function __construct(MySQL $driver)
     {
         $this->driver = $driver;
         $this->string = new \BLKTech\Storage\String\Driver\DataBase\SQL\Dynamic($driver);
     }
-    
+
     private function checkTable($tableName)
     {
         static $_ = null;
-        
-        if($_ === null)
+
+        if($_ === null) {
             $_ = array();
-        
-        if(isset($_[$tableName]))
+        }
+
+        if(isset($_[$tableName])) {
             return false;
-        else
-        {
+        } else {
             $_[$tableName] = true;
             return true;
         }
-    }        
+    }
     private function getTableNameNode($level)
     {
         $_ = 'blktech_storage_path__' . $level;
-        
-        if($this->checkTable($_))
+
+        if($this->checkTable($_)) {
             $this->driver->command("CREATE TABLE IF NOT EXISTS `" . $_ . "` (`id` int(11) NOT NULL AUTO_INCREMENT, `idParent` int(11) NOT NULL, `idElement` int(11) NOT NULL, `lenElement` int(11) NOT NULL, PRIMARY KEY (id),UNIQUE (`idParent`,`idElement`,`lenElement`)) ENGINE=MyISAM");
-        
-        return $_;        
+        }
+
+        return $_;
     }
     private function getHashData($hash)
     {
         return $this->driver->getRow($this->getTableNameHash($hash), array('idParent', 'level'), array('hash' => $hash));
     }
-    
-    
-    public function delete($id) 
+
+
+    public function delete($id)
     {
         throw new BLKTech\NotImplementedException();
     }
 
-    public function exists($id) 
+    public function exists($id)
     {
         throw new BLKTech\NotImplementedException();
     }
 
-    public function get($id) 
+    public function get($id)
     {
         $row = Integer::unSignedInt64UnCombineIntoInt32($id);
         $stringPath = '';
 
         $level = $row[0];
         $idParent = $row[1];
-        while ($level >= 0)
-        {
+        while ($level >= 0) {
             $rowTree = $this->driver->getRow($this->getTableNameNode($level), array('idParent', 'idElement', 'lenElement'), array('id' => $idParent));
 
             $element = $this->string->get(Integer::unSignedInt32CombineIntoInt64($rowTree['lenElement'], $rowTree['idElement']));
-            
+
             $stringPath = $element . DIRECTORY_SEPARATOR . $stringPath;
 
             $idParent = $rowTree['idParent'];
             $level--;
         }
 
-        return Path::getPathFromString($stringPath);        
+        return Path::getPathFromString($stringPath);
     }
-    public function set(Path $path) 
+    public function set(Path $path)
     {
         $level = 0;
         $idParent = 0;
-        foreach ($path->getPathElements() as $element)
-        {
+        foreach ($path->getPathElements() as $element) {
             $idString = Integer::unSignedInt64UnCombineIntoInt32($this->string->set($element));
             $idParent = $this->driver->autoTable($this->getTableNameNode($level), array('idParent' => $idParent, 'idElement' => $idString[1], 'lenElement' => $idString[0]), array('id'))['id'];
 
@@ -119,11 +118,12 @@ class Dynamic extends \BLKTech\Storage\Path\Driver\DataBase\SQL
 
         $_ = array();
 
-        foreach ($this->driver->select($this->getTableNameNode($level + 1), array('idElement', 'lenElement'), array('idParent' => $idParent)) as $row)
-            $_[] = $this->string->get (Integer::unSignedInt32CombineIntoInt64 ($row['lenElement'], $row['idElement']));
-                
+        foreach ($this->driver->select($this->getTableNameNode($level + 1), array('idElement', 'lenElement'), array('idParent' => $idParent)) as $row) {
+            $_[] = $this->string->get(Integer::unSignedInt32CombineIntoInt64($row['lenElement'], $row['idElement']));
+        }
+
 
         return $_;
     }
-    
+
 }

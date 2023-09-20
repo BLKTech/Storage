@@ -45,7 +45,7 @@ class Memcached extends \BLKTech\Storage\KeyValue\Driver\Memory
 
     public function exists($key)
     {
-        return $this->memcached->get($key)!==false;
+        return $this->memcached->get($key) !== false;
     }
 
     public function get($key)
